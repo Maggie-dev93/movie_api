@@ -1,10 +1,9 @@
 const http = require('http'),
-  fs = require('fs'),
-  url = require('url');
+  fs = require('fs');
 
 http.createServer((request, response) => {
   let addr = request.url,
-    q = new URL(addr, 'http://' + request.headers.host),
+    q = new URL(addr), // Updated this line
     filePath = '';
 
   fs.appendFile('log.txt', 'URL: ' + addr + '\nTimestamp: ' + new Date() + '\n\n', (err) => {
@@ -29,8 +28,7 @@ http.createServer((request, response) => {
     response.writeHead(200, { 'Content-Type': 'text/html' });
     response.write(data);
     response.end();
-
   });
-
 }).listen(8080);
+
 console.log('My test server is running on Port 8080.');
