@@ -3,7 +3,7 @@ const http = require('http'),
 
 http.createServer((request, response) => {
   let addr = request.url,
-    q = new URL(addr), // Updated this line
+    q = new URL(addr, "http://" + request.headers.host); // Updated this line
     filePath = '';
 
   fs.appendFile('log.txt', 'URL: ' + addr + '\nTimestamp: ' + new Date() + '\n\n', (err) => {
