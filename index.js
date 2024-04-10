@@ -2,12 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 
-// Redefine the middleware for setting the Content Security Policy header
-app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', 'default-src * data:; img-src * data:; font-src * data:'); // Add font-src to allow loading fonts
-  next();
-});
-
+// Initialize your express application
+const app = express();
 
 app.use(bodyParser.json());
 
@@ -29,7 +25,7 @@ let movies = [
         "Title": "Pirates of the Caribbean",
         "Description": "In this swashbuckling tale, Captain Jack Sparrow, played by the charismatic Johnny Depp, makes an unexpected entrance into Port Royal, where he finds himself shipless and crewless. However, his arrival coincides with a perilous event: the town is soon attacked by a notorious pirate ship.Amidst the chaos, the pirates seize the governor's daughter, Elizabeth, portrayed by the talented Keira Knightley. Little do they know, Elizabeth possesses a valuable coin tied to a curse that has rendered the pirates undead. In a daring adventure, a courageous blacksmith, played by Orlando Bloom, who harbors feelings for Elizabeth, joins forces with Sparrow to pursue the pirates and unravel the mystery surrounding the cursed treasure.",
         "Genre": {
-            "Name": "Action/Adventure",
+            "Name": "Action",
             "Description": "featuring characters involved in exciting and usually dangerous activities and adventures.",
             "Release Date": "August 2003",
         },
@@ -43,7 +39,7 @@ let movies = [
         "Title": "The Princess Bride",
         "Description": "While home sick, a boys grandfather reads him the story of a farmboy-turned-pirate who encounters numerous obstacles, enimies and allies in his quest to be reunited with his one true love.",
         "Genre": {
-            "Name": "Action/Adventure",
+            "Name": "Action",
             "Description": "featuring characters involved in exciting and usually dangerous activities and adventures.",
             "Release Date": "August 2003",
         },
@@ -54,6 +50,77 @@ let movies = [
         }
     },
 ];
+
+// CREATE
+app.post('/users', (req, res) => {
+    const newUser = req.body;
+
+    if (newUser.name) {
+        newUser.id = uuid.v4();
+        users.push(newUser);
+        res.status(201).json(newUser)
+    } else {
+        res.status(400).send('users need names')
+    }
+    })
+
+    //UPDATE
+    app.put('/users/:id', (req, res) => {
+        const { id } = req.params;
+        const updatedUser = req.body;
+
+        let user = users.find( user => user.id == id );
+
+        if (user) {
+            user.name = updatedUser.name;
+            res.status(200).json(user);
+        } else {
+            res.status(400).send('no such user')
+        }
+        })
+
+    //POST
+    app.post('/users/:id/:movieTitle', (req, res) => {
+        const { id, movieTitle } = req.params;
+        
+        let user = users.find( user => user.id == id );
+
+        if (user) {
+            user.favoriteMovies.push(movieTitle);
+            res.status(200).send(`${movieTitle} has been added to user ${id}'s array`);
+        } else {
+            res.status(400).send('no such user')
+        }
+        })
+
+    //DELETE
+    app.delete('/users/:id/:movieTitle', (req, res) => {
+        const { id, movieTitle } = req.params;
+        
+        let user = users.find( user => user.id == id );
+
+        if (user) {
+            user.favoriteMovies = user.favoriteMovies.filter( title => title !== movieTitle);
+            res.status(200).send(`${movieTitle} has been removed from user ${id}'s array`);
+        } else {
+            res.status(400).send('no such user')
+        }
+        })
+
+    //DELETE
+    app.delete('/users/:id', (req, res) => {
+        const { id } = req.params;
+        
+        let user = users.find( user => user.id == id );
+
+        if (user) {
+            users = users.filter( user => user.id != id);
+            res.status (200).send(`user ${id} has been deleted`);
+        } else {
+            res.status(400).send('no such user')
+        }
+        })
+
 
 // READ all movies
 app.get('/movies', (req, res) => {
@@ -71,6 +138,33 @@ app.get('/movies/:title', (req, res) => {
         res.status(404).send('Movie not found');
     }
 });
+
+// READ
+app.get('/movies/genre/:genreName', (req, res) => {
+  const { genreName } = req.params;
+  const genre = movies.find( movie => movie.Genre.Name === genreName ).Genre;
+
+  if (genre) {
+      res.status(200).json(genre);
+  } else {
+      res.status(404).send('Genre not found');
+  }
+});
+
+// READ
+app.get('/movies/director/:directorName', (req, res) => {
+    const { directorName } = req.params;
+    // First, find a movie that matches the director name.
+    const movie = movies.find(movie => movie.Director.Name === directorName);
+
+    // If a movie is found, send the director info, otherwise send a 'Director not found' message.
+    if (movie) {
+        res.status(200).json(movie.Director);
+    } else {
+        res.status(404).send('Director not found');
+    }
+});
+
 
 app.listen(8080, () => console.log("listening on 8080"));
 
