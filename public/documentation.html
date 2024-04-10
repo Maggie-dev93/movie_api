@@ -32,147 +32,58 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>User Login</td>
-          <td>/login</td>
-          <td>POST</td>
-          <td>None</td>
-          <td>
-            A JSON object holding Username and Password, structured as
-            follows:<br /><br />{ 'Username': '{username}', 'Password':
-            '{Password}' },<br />
-          </td>
-          <td>
-            JWT Authentication token <br />
-            { 'token': '######' }
-          </td>
-        </tr>
-        <tr>
-          <td>Register a new user</td>
-          <td>/users</td>
-          <td>POST</td>
-          <td>None</td>
-          <td>
-            A JSON object holding data about the user to add, structured
-            like:<br /><br />{ 'Name': 'John Doe',<br />
-            'Username': '{username}',<br />
-            'Email': {email@example.com},<br />
-            'Birth-date': 'YYYY-MM-DD' }
-          </td>
-          <td>
-            A JSON object holding data about the user that was added, including
-            their assigned id and auth token:<br />
-            { '_id': '######',<br />
-            'Name': 'John Doe',<br />
-            'Username': '{username}',<br />
-            'Email': {email@example.com},<br />
-            'Birth-date': 'YYYY-MM-DD', <br />
-            'token': '######' }
-          </td>
-        </tr>
-        <tr>
-          <td>Get list of movies</td>
-          <td>/movies</td>
-          <td>GET</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            An array of JSON objects holding data about all the movies in the
-            database
-          </td>
-        </tr>
-        <tr>
-          <td>Get list of movies by director</td>
-          <td>/movies/directors/{Name}</td>
-          <td>GET</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            An array of JSON objects holding data about all the movies by
-            requested director
-          </td>
-        </tr>
-        <tr>
-          <td>Get list of movies by genre</td>
-          <td>/movies/genres/{genreName}</td>
-          <td>GET</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            An array of JSON objects holding data about all the movies by
-            requested genre
-          </td>
-        </tr>
-        <tr>
-          <td>Get data about a single movie by title</td>
-          <td>/movies/{Title}</td>
-          <td>GET</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            A JSON object holding data about the requested movie like this:<br />
-            { '_id': '######',<br />
-            'title': 'Iron Man',<br />
-            'director': 'John Favreau',<br />
-            'release-year': '2008',<br />
-            'genre': 'action' }
-          </td>
-        </tr>
-        <tr>
-          <td>Update user details</td>
-          <td>/users/{Username}</td>
-          <td>PUT</td>
-          <td>Required (JWT)</td>
-          <td>
-            A JSON object holding data about the user to update, structured as
-            follows:<br /><br />{ 'Name': 'John Doe',<br />
-            'Username': '{username}',<br />
-            'Email': {email@example.com},<br />
-            'BirthDate': 'YYYY-MM-DD' }
-          </td>
-          <td>
-            A JSON object holding data about the user that was added, including
-            their assigned id and auth token:<br />
-            { '_id': '######',<br />
-            'Name': 'John Doe',<br />
-            'Username': '{username}',<br />
-            'Email': {email@example.com},<br />
-            'BirthDate': 'YYYY-MM-DD', <br />
-            'token': '######' }
-          </td>
-        </tr>
-        <tr>
-          <td>Delete User</td>
-          <td>/users/{Username}</td>
-          <td>DELETE</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>A confirmation stating the user has been deleted</td>
-        </tr>
-        <tr>
-          <td>Add a movie object to a user's favorites list</td>
-          <td>/users/{Username}/movies/{movieID}</td>
-          <td>PUT</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            A text message indicating whether the movie was successfully added
-            from the user's favorited movies
-          </td>
-        </tr>
-        <tr>
-          <td>Remove a movie from a user's favorites list</td>
-          <td>/users/{Username}/movies/{movieID}</td>
-          <td>DELETE</td>
-          <td>Required (JWT)</td>
-          <td>None</td>
-          <td>
-            A text message indicating whether the movie was successfully removed
-            from the user's favorited movies
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <table>
+            <tr>
+                <th>HTTP Method</th>
+                <th>Endpoint</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/users</td>
+                <td>Create a new user</td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/users/:id</td>
+                <td>Update an existing user</td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/users/:id/:movieTitle</td>
+                <td>Add a movie to a user's favorite list</td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/users/:id/:movieTitle</td>
+                <td>Remove a movie from a user's favorite list</td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/users/:id</td>
+                <td>Delete a user</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies</td>
+                <td>Get all movies</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/:title</td>
+                <td>Get a specific movie by title</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/genre/:genreName</td>
+                <td>Get movies by genre</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/director/:directorName</td>
+                <td>Get director information by name</td>
+            </tr>
+        </table>
     
     <script src="index.js"></script>
 </body>
