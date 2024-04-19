@@ -44,47 +44,17 @@
             </tr>
             <tr>
                 <td>PUT</td>
-                <td>/users/:id</td>
+                <td>/users/:username</td>
                 <td>Update an existing user</td>
             </tr>
             <tr>
-                <td>PUT</td>
-                <td>/movies/{id}</td>
-                <td>Update the description of a specific movie</td>
-                <td>
-                    <ul>
-                        <li>id (required): The ID of the movie to update.</li>
-                    </ul>
-                </td>
-                <td>
-                    <ul>
-                        <li>description (required): The new description of the movie.</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>PUT</td>
-                <td>/directors/{directorName}</td>
-                <td>Update the bio of a director associated with multiple movies</td>
-                <td>
-                    <ul>
-                        <li>directorName (required): The name of the director whose bio needs updating.</li>
-                    </ul>
-                </td>
-                <td>
-                    <ul>
-                        <li>bio (required): The new biography of the director.</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
                 <td>POST</td>
-                <td>/users/:id/:movieTitle</td>
+                <td>/users/:id/movie/:movieID</td>
                 <td>Add a movie to a user's favorite list</td>
             </tr>
             <tr>
                 <td>DELETE</td>
-                <td>/users/:id/:movieTitle</td>
+                <td>/users/:id/movie/:movieID</td>
                 <td>Remove a movie from a user's favorite list</td>
             </tr>
             <tr>
