@@ -126,7 +126,42 @@ app.post('/users/:Username/movies/:MovieID', async (req, res) => {
   });
 });
 
+// Delete a user by username
+app.delete('/users/:Username', async (req, res) => {
+  await Users.findOneAndDelete({ Username: req.params.Username })
+    .then((user) => {
+      if (!user) {
+        res.status(400).send(req.params.Username + ' was not found');
+      } else {
+        res.status(200).send(req.params.Username + ' was deleted');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
 
+// Allow users to remove a movie from their list of favorites
+app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
+  const { Username, MovieID } = req.params;
+  await Users.findOneAndUpdate(
+      { Username: Username },
+      { $pull: { FavoriteMovies: MovieID } },
+      { new: true }
+  )
+  .then(user => {
+      if (!user) {
+          res.status(404).send(`${Username} was not found`);
+      } else {
+          res.status(200).send(`Movie removed from ${Username}'s favorites`);
+      }
+  })
+  .catch(err => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+  });
+});
 
 //MOVIES
 // Get all movies
@@ -151,30 +186,41 @@ app.get('/movies/:Title', async (req, res) => {
       res.status(500).send('Error: ' + err);
     });
 });
-// Get a genre by name/genre
-app.get('/movies/:Genres', async (req, res) => {
-  await Movies.findOne({ Genre: req.params.Genres })
-    .then((movies) => {
-      res.json(movies);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
+
+// Get a genre by name
+app.get('/movies/genres/:genreName', async (req, res) => {
+  try {
+    // Find a movie with the specified genre name
+    const movie = await Movies.findOne({ "Genre.Name": req.params.genreName });
+    if (movie) {
+      // If a movie is found, return the genre information
+      res.json(movie.Genre);
+    } else {
+      // If no movie is found, return a not found message
+      res.status(404).send('Genre not found');
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error: " + err);
+  }
 });
 
-
-
 // Get a movie by director
-app.get('/movies/:Director', async (req, res) => {
-  await Movies.findOne({ Director: req.params.Director })
-    .then((movies) => {
-      res.json(movies);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
+app.get('/movies/directors/:directorName', async (req, res) => {
+  try {
+    // Find a movie with the specified genre name
+    const movie = await Movies.findOne({ "Director.Name": req.params.directorName });
+    if (movie) {
+      // If a movie is found, return the genre information
+      res.json(movie.Director);
+    } else {
+      // If no movie is found, return a not found message
+      res.status(404).send('Director not found');
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error: " + err);
+  }
 });
 
 app.listen(8080, () => console.log("listening on 8080"));
