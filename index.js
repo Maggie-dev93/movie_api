@@ -2,56 +2,184 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 
+const morgan = require("morgan");
+const mongoose = require('mongoose');
+const Models = require('./models.js');
+
+const Movies = Models.Movie;
+const Users = Models.User;
 // Initialize your express application
 const app = express();
 
+mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-let users = [
-    {
-        id: 1,
-        name: "Maggie",
-        favoriteMovies: []
-    },
-    {
-        id: 2,
-        name: "Ian",
-        favoriteMovies: ["Pirates of the Caribbean"]
-    },
-];
+//test default
+app.get("/", (req, res) => {
+    res.send("Welcome to MyFlix!");
+});
 
-let movies = [
-    {
-        "Title": "Pirates of the Caribbean",
-        "Description": "In this swashbuckling tale, Captain Jack Sparrow, played by the charismatic Johnny Depp, makes an unexpected entrance into Port Royal, where he finds himself shipless and crewless. However, his arrival coincides with a perilous event: the town is soon attacked by a notorious pirate ship.Amidst the chaos, the pirates seize the governor's daughter, Elizabeth, portrayed by the talented Keira Knightley. Little do they know, Elizabeth possesses a valuable coin tied to a curse that has rendered the pirates undead. In a daring adventure, a courageous blacksmith, played by Orlando Bloom, who harbors feelings for Elizabeth, joins forces with Sparrow to pursue the pirates and unravel the mystery surrounding the cursed treasure.",
-        "Genre": {
-            "Name": "Action",
-            "Description": "featuring characters involved in exciting and usually dangerous activities and adventures.",
-            "Release Date": "August 2003",
-        },
-        "Director": {
-            "Name": "Gore Verbinski",
-            "Bio": "Gore Verbinski is an American film director and writer, best known for directing the first three Pirates of the Caribbean films and The Ring.",
-            "Birth": "March 16, 1964",
+//Add a user
+/* We’ll expect JSON in this format
+{
+  ID: Integer,
+  Username: String,
+  Password: String,
+  Email: String,
+  BirthDate: Date
+}*/
+
+app.post('/users', async (req, res) => {
+    await Users.findOne({ Username: req.body.Username })
+      .then((user) => {
+        if (user) {
+          return res.status(400).send(req.body.Username + 'already exists');
+        } else {
+          Users
+            .create({
+              Username: req.body.Username,
+              Password: req.body.Password,
+              Email: req.body.Email,
+              BirthDate: req.body.BirthDaten
+            })
+            .then((user) =>{res.status(201).json(user) })
+          .catch((error) => {
+            console.error(error);
+            res.status(500).send('Error: ' + error);
+          })
         }
-    },
-    {
-        "Title": "The Princess Bride",
-        "Description": "While home sick, a boys grandfather reads him the story of a farmboy-turned-pirate who encounters numerous obstacles, enimies and allies in his quest to be reunited with his one true love.",
-        "Genre": {
-            "Name": "Action",
-            "Description": "featuring characters involved in exciting and usually dangerous activities and adventures.",
-            "Release Date": "August 2003",
-        },
-        "Director": {
-            "Name": "Rob Reiner",
-            "Bio": "Rob Reiner is a renowned American director, known for his iconic contributions to cinema including The Princess Bride and When Harry Met Sally..",
-            "Birth": "MMarch 6, 1947",
-        }
-    },
-];
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send('Error: ' + error);
+      });
+  });
 
-// CREATE
+   // Get all users
+app.get('/users', async (req, res) => {
+    await Users.find()
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
+  // Get a user by username
+app.get('/users/:Username', async (req, res) => {
+    await Users.findOne({ Username: req.params.Username })
+      .then((user) => {
+        res.json(user);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
+
+  // Update a user's info, by username
+/* We’ll expect JSON in this format
+{
+  Username: String,
+  (required)
+  Password: String,
+  (required)
+  Email: String,
+  (required)
+  Birthday: Date
+}*/
+app.put('/users/:Username', async (req, res) => {
+  await Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
+    {
+      Username: req.body.Username,
+      Password: req.body.Password,
+      Email: req.body.Email,
+      BirthDate: req.body.Birthday
+    }
+  },
+  { new: true }) // This line makes sure that the updated document is returned
+  .then((updatedUser) => {
+    res.json(updatedUser);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+  })
+
+});
+
+// Add a movie to a user's list of favorites
+app.post('/users/:Username/movies/:MovieID', async (req, res) => {
+  await Users.findOneAndUpdate({ Username: req.params.Username }, {
+     $push: { FavoriteMovies: req.params.MovieID }
+   },
+   { new: true }) // This line makes sure that the updated document is returned
+  .then((updatedUser) => {
+    res.json(updatedUser);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+  });
+});
+
+
+
+//MOVIES
+// Get all movies
+app.get('/movies', async (req, res) => {
+  await Movies.find()
+    .then((movies) => {
+      res.status(201).json(movies);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+// Get a movie by title
+app.get('/movies/:Title', async (req, res) => {
+  await Movies.findOne({ Title: req.params.Title })
+    .then((movies) => {
+      res.json(movies);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+// Get a genre by name/genre
+app.get('/movies/:Genres', async (req, res) => {
+  await Movies.findOne({ Genre: req.params.Genres })
+    .then((movies) => {
+      res.json(movies);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
+});
+
+
+
+// Get a movie by director
+app.get('/movies/:Director', async (req, res) => {
+  await Movies.findOne({ Director: req.params.Director })
+    .then((movies) => {
+      res.json(movies);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+
+app.listen(8080, () => console.log("listening on 8080"));
+
+/*// CREATE
 app.post('/users', (req, res) => {
     const newUser = req.body;
 
@@ -163,12 +291,7 @@ app.get('/movies/director/:directorName', (req, res) => {
     } else {
         res.status(404).send('Director not found');
     }
-});
-
-
-app.listen(8080, () => console.log("listening on 8080"));
-
-
+});*/
 
     
 
