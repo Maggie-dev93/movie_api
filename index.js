@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const uuid = require('uuid');
 
 const morgan = require("morgan");
 const mongoose = require('mongoose');
@@ -15,6 +14,8 @@ mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useU
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan('common')); // Uncomment for HTTP request logging
+app.use(express.static('public'));
 
 //test default
 app.get("/", (req, res) => {
@@ -42,7 +43,7 @@ app.post('/users', async (req, res) => {
               Username: req.body.Username,
               Password: req.body.Password,
               Email: req.body.Email,
-              BirthDate: req.body.BirthDaten
+              BirthDate: req.body.BirthDate
             })
             .then((user) =>{res.status(201).json(user) })
           .catch((error) => {
@@ -89,7 +90,7 @@ app.get('/users/:Username', async (req, res) => {
   (required)
   Email: String,
   (required)
-  Birthday: Date
+  BirthDate: Date
 }*/
 app.put('/users/:Username', async (req, res) => {
   await Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
@@ -97,7 +98,7 @@ app.put('/users/:Username', async (req, res) => {
       Username: req.body.Username,
       Password: req.body.Password,
       Email: req.body.Email,
-      BirthDate: req.body.Birthday
+      BirthDate: req.body.BirthDate
     }
   },
   { new: true }) // This line makes sure that the updated document is returned

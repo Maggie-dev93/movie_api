@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie API Documentation</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #dddddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
 </head>
 <body>
     <h1>Welcome to the Movie API Documentation</h1>
@@ -23,76 +28,153 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col">Request</th>
-          <th scope="col">URL</th>
           <th scope="col">HTTP Method</th>
+          <th scope="col">URL</th>
+          <th scope="col">Description</th>
           <th scope="col">Authorization</th>
           <th scope="col">Request body</th>
           <th scope="col">Response body</th>
         </tr>
       </thead>
       <tbody>
-            <tr>
-                <th>HTTP Method</th>
-                <th>Endpoint</th>
-                <th>Description</th>
-            </tr>
+        <tr>
+            <td>GET</td>
+            <td>/users</td>
+            <td>Get all users</td>
+            <td>Optional</td>
+            <td>None</td>
+            <td>{"Message:"
+                "_id": "123abc",
+                "Username": "username",
+                "Password": "1234abc",
+                "Email": "example@example.com",
+                "BirthDate": "YYYY-MM-DD",
+                "FavoriteMovies": "MovieId",
+                }
+            ]</td>
+        </tr>
+        
             <tr>
                 <td>POST</td>
                 <td>/users</td>
                 <td>Create a new user</td>
+                <td>Required</td>
+                <td> {
+                    "Username": "username",
+                    "Password": "1234abc",
+                    "Email": "example@example.com",
+                    "BirthDate": "YYYY-MM-DD"
+                }</td>
+                <td>"Message":
+                    { "_id": "123abc",
+                    "Username": "username",
+                    "Password": "1234abc",
+                    "Email": "example@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": "MovieId",}
+                </td>
             </tr>
             <tr>
                 <td>PUT</td>
-                <td>/users/:username</td>
+                <td>/users/:Username</td>
                 <td>Update an existing user</td>
+                <td>Required</td>
+                <td>{
+                    "Username": "updateusername",
+                    "Password": "update1234abc",
+                    "Email": "updateuser@example.com"
+                }</td>
+                <td>"Update message:" 
+                    { "_id": "123abc",
+                    "Username": "updatedusername",
+                    "Password": "updated1234abc",
+                    "Email": "updatedexample@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": "MovieId",}</td>
             </tr>
             <tr>
                 <td>POST</td>
-                <td>/users/:id/movie/:movieID</td>
+                <td>/users/:Username/movie/:movieID</td>
                 <td>Add a movie to a user's favorite list</td>
+                <td>Required</td>
+                <td>{ "Username": "username", "movieId": "456" }</td>
+                <td> 
+                    "Message":
+                    { "_id": "123abc",
+                    "Username": "username",
+                    "Password": "1234abc",
+                    "Email": "example@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": "MovieId[123abc]",}
+                </td>
             </tr>
             <tr>
                 <td>DELETE</td>
-                <td>/users/:id/movie/:movieID</td>
+                <td>/users/:Username/movie/:movieID</td>
                 <td>Remove a movie from a user's favorite list</td>
+                <td>Required</td>
+                <td>{"Username": "username", "movieId": "456" }</td>
+                <td>{ "Message": "Movie removed from user's favorites." }</td>
             </tr>
             <tr>
                 <td>DELETE</td>
-                <td>/users/:id</td>
+                <td>/users/:Username</td>
                 <td>Delete a user</td>
+                <td>Required</td>
+                <td>"Username": "username"</td>
+                <td>{ "Message": "User was deleted." }</td>
             </tr>
             <tr>
                 <td>GET</td>
                 <td>/movies</td>
                 <td>Get all movies</td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td>/movies/:title</td>
-                <td>Get a specific movie by title</td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td>/movies/genre/:genreName</td>
-                <td>Get movies by genre</td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td>/movies/director/:directorName</td>
-                <td>Get director information by name</td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td>/movies</td>
-                <td>Get all movies filtered by genre and director</td>
-                <td>
-                    <ul>
-                        <li>genre (required): The genre of the movies to filter by.</li>
-                        <li>director (required): The director of the movies to filter by.</li>
-                    </ul>
+                <td>Optional</td>
+                <td>None</td>
+                <td>{ 
+                    "Message":
+                    "Actors": [],
+                    "_id": "123abc".
+                    "Title": "Title of Movie",
+                    "Description": "Description of Movie",
+                    "ReleaseDate": "YYYY-MM-DD",
+                    "Genre": "Movie Genre + Description",
+                    "Director": "Director Name, Bio, Birth, Death",
+                }
                 </td>
-            </tr>        
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/:Title</td>
+                <td>Get a specific movie by title</td>
+                <td>Optional</td>
+                <td>{ "movies": "Title" }</td>
+                <td>{
+                    "Message":
+                    "Actors": [],
+                    "_id": "123abc".
+                    "Title": "Title of Movie",
+                    "Description": "Description of Movie",
+                    "ReleaseDate": "YYYY-MM-DD",
+                    "Genre": "Movie Genre + Description",
+                    "Director": "Director Name, Bio, Birth, Death",
+                 }</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/genres/:genreName</td>
+                <td>Get information by genre</td>
+                <td>Optional</td>
+                <td>{ "Genre": "Musical, etc"} </td>
+                <td>{ "Message": "Genre": "Action", "Descrition": "The genre..."}</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/directors/:directorName</td>
+                <td>Get director information by name</td>
+                <td>Optional</td>
+                <td>{ "Director" : "John Doe" }</td>
+                <td>{ "Message": "Name": "John Doe", "Bio": "Biography here", "Born": "1900", "Death": "1995"}</td>
+            </tr>   
         </tbody>
         </table>
     
