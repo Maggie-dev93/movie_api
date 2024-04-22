@@ -36,19 +36,16 @@ passport.use(
   )
 );
 
-// JWT authentication strategy
+
 passport.use(new JWTStrategy({
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'your_jwt_secret' // This should be the same key used in the JWT token generation
+  secretOrKey: 'your_jwt_secret'
 }, async (jwtPayload, callback) => {
-  try {
-    const user = await Users.findById(jwtPayload._id);
-    if (user) {
+  return await Users.findById(jwtPayload._id)
+    .then((user) => {
       return callback(null, user);
-    } else {
-      return callback(null, false);
-    }
-  } catch (error) {
-    return callback(error, false);
-  }
+    })
+    .catch((error) => {
+      return callback(error)
+    });
 }));
