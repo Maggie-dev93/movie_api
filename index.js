@@ -16,6 +16,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('common')); // Uncomment for HTTP request logging
 app.use(express.static('public'));
+let auth = require('./auth')(app);
+const passport = require('passport');
+require('./passport');
 
 //test default
 app.get("/", (req, res) => {
@@ -166,8 +169,8 @@ app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
 
 //MOVIES
 // Get all movies
-app.get('/movies', async (req, res) => {
-  await Movies.find()
+app.get('/movies', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    await Movies.find()
     .then((movies) => {
       res.status(201).json(movies);
     })
