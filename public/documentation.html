@@ -43,14 +43,22 @@
             <td>Get all users</td>
             <td>Optional</td>
             <td>None</td>
-            <td>{"Message:"
-                "_id": "123abc",
-                "Username": "username",
-                "Password": "1234abc",
-                "Email": "example@example.com",
-                "BirthDate": "YYYY-MM-DD",
-                "FavoriteMovies": "MovieId",
+            <td>[
+                {
+                    "_id": "123abc",
+                    "Username": "username",
+                    "Email": "example@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": ["MovieId1", "MovieId2"]
+                },
+                {
+                    "_id": "456def",
+                    "Username": "anotheruser",
+                    "Email": "another@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": ["MovieId3"]
                 }
+                ...
             ]</td>
         </tr>
         
@@ -65,13 +73,13 @@
                     "Email": "example@example.com",
                     "BirthDate": "YYYY-MM-DD"
                 }</td>
-                <td>"Message":
+                <td>
                     { "_id": "123abc",
                     "Username": "username",
                     "Password": "1234abc",
                     "Email": "example@example.com",
                     "BirthDate": "YYYY-MM-DD",
-                    "FavoriteMovies": "MovieId",}
+                    "FavoriteMovies": ["MovieId3"]}
                 </td>
             </tr>
             <tr>
@@ -84,13 +92,14 @@
                     "Password": "update1234abc",
                     "Email": "updateuser@example.com"
                 }</td>
-                <td>"Update message:" 
+                <td> 
                     { "_id": "123abc",
                     "Username": "updatedusername",
                     "Password": "updated1234abc",
                     "Email": "updatedexample@example.com",
                     "BirthDate": "YYYY-MM-DD",
-                    "FavoriteMovies": "MovieId",}</td>
+                    "FavoriteMovies": ["MovieId3"],
+                }</td>
             </tr>
             <tr>
                 <td>POST</td>
@@ -99,30 +108,29 @@
                 <td>Required</td>
                 <td>{ "Username": "username", "movieId": "456" }</td>
                 <td> 
-                    "Message":
                     { "_id": "123abc",
                     "Username": "username",
                     "Password": "1234abc",
                     "Email": "example@example.com",
                     "BirthDate": "YYYY-MM-DD",
-                    "FavoriteMovies": "MovieId[123abc]",}
-                </td>
+                    "FavoriteMovies": ["MovieId3"],
+                }</td>
             </tr>
             <tr>
                 <td>DELETE</td>
                 <td>/users/:Username/movie/:movieID</td>
                 <td>Remove a movie from a user's favorite list</td>
                 <td>Required</td>
-                <td>{"Username": "username", "movieId": "456" }</td>
-                <td>{ "Message": "Movie removed from user's favorites." }</td>
+                <td>None</td>
+                <td>{ "Movie removed from user's favorites." }</td>
             </tr>
             <tr>
                 <td>DELETE</td>
                 <td>/users/:Username</td>
                 <td>Delete a user</td>
                 <td>Required</td>
-                <td>"Username": "username"</td>
-                <td>{ "Message": "User was deleted." }</td>
+                <td>None</td>
+                <td>{ "User was deleted." }</td>
             </tr>
             <tr>
                 <td>GET</td>
@@ -130,33 +138,42 @@
                 <td>Get all movies</td>
                 <td>Optional</td>
                 <td>None</td>
-                <td>{ 
-                    "Message":
-                    "Actors": [],
-                    "_id": "123abc".
-                    "Title": "Title of Movie",
-                    "Description": "Description of Movie",
-                    "ReleaseDate": "YYYY-MM-DD",
-                    "Genre": "Movie Genre + Description",
-                    "Director": "Director Name, Bio, Birth, Death",
-                }
-                </td>
+                <td>[
+                    {
+                        "_id": "123abc",
+                        "Title": "Title of Movie",
+                        "Description": "Description of Movie",
+                        "ReleaseDate": "YYYY-MM-DD",
+                        "Genre": { Name: "Movie Genre", Description: "Description of Movie Genre" },
+                        "Director": { Name: "Director Name", Bio: "Director Biography", Birth: "Director Birth Date", Death: "Director Death Date" },
+                        "Actors": []
+                    },
+                    {
+                        "_id": "456def",
+                        "Title": "Another Movie",
+                        "Description": "Another Movie Description",
+                        "ReleaseDate": "YYYY-MM-DD",
+                        "Genre": { Name: "Another Genre", Description: "Description of Another Genre" },
+                        "Director": { Name: "Another Director", Bio: "Another Director Biography", Birth: "Another Director Birth Date", Death: "Another Director Death Date" },
+                        "Actors": []
+                    },
+                    ...
+                ]</td>
             </tr>
             <tr>
                 <td>GET</td>
                 <td>/movies/:Title</td>
                 <td>Get a specific movie by title</td>
                 <td>Optional</td>
-                <td>{ "movies": "Title" }</td>
+                <td>None</td>
                 <td>{
-                    "Message":
-                    "Actors": [],
-                    "_id": "123abc".
-                    "Title": "Title of Movie",
-                    "Description": "Description of Movie",
-                    "ReleaseDate": "YYYY-MM-DD",
-                    "Genre": "Movie Genre + Description",
-                    "Director": "Director Name, Bio, Birth, Death",
+                        "_id": "123abc",
+                        "Title": "Title of Movie",
+                        "Description": "Description of Movie",
+                        "ReleaseDate": "YYYY-MM-DD",
+                        "Genre": { Name: "Movie Genre", Description: "Description of Movie Genre" },
+                        "Director": { Name: "Director Name", Bio: "Director Biography", Birth: "Director Birth Date", Death: "Director Death Date" },
+                        "Actors": []
                  }</td>
             </tr>
             <tr>
@@ -164,16 +181,16 @@
                 <td>/movies/genres/:genreName</td>
                 <td>Get information by genre</td>
                 <td>Optional</td>
-                <td>{ "Genre": "Musical, etc"} </td>
-                <td>{ "Message": "Genre": "Action", "Descrition": "The genre..."}</td>
+                <td>None</td>
+                <td> "Genre": { Name: "Movie Genre", Description: "Description of Movie Genre" },</td>
             </tr>
             <tr>
                 <td>GET</td>
                 <td>/movies/directors/:directorName</td>
                 <td>Get director information by name</td>
                 <td>Optional</td>
-                <td>{ "Director" : "John Doe" }</td>
-                <td>{ "Message": "Name": "John Doe", "Bio": "Biography here", "Born": "1900", "Death": "1995"}</td>
+                <td>None</td>
+                <td> "Director": { Name: "Director Name", Bio: "Director Biography", Birth: "Director Birth Date", Death: "Director Death Date" },</td>
             </tr>   
         </tbody>
         </table>
