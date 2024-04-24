@@ -10,12 +10,18 @@ const Users = Models.User;
 // Initialize your express application
 const app = express();
 
+const { check, validationResult } = require('express-validator');
+
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('common')); // Uncomment for HTTP request logging
 app.use(express.static('public'));
+
+const cors = require('cors');
+app.use(cors());
+
 let auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
@@ -35,7 +41,22 @@ app.get("/", (req, res) => {
   BirthDate: Date
 }*/
 
-app.post('/users', async (req, res) => {
+app.post('/users', 
+  // Validation logic here for request
+  [
+    check('Username', 'Username is required').isLength({min: 5}),
+    check('Username', 'Username contains non alphanumeric characters not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ], async (req, res) => {
+  // check the validation object for errors
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+  let hashedPassword = Users.hashPassword(req.body.Password);
     await Users.findOne({ Username: req.body.Username })
       .then((user) => {
         if (user) {
@@ -44,7 +65,7 @@ app.post('/users', async (req, res) => {
           Users
             .create({
               Username: req.body.Username,
-              Password: req.body.Password,
+              Password: hashedPassword,
               Email: req.body.Email,
               BirthDate: req.body.BirthDate
             })
@@ -95,12 +116,19 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), as
   (required)
   BirthDate: Date
 }*/
-app.put('/users/:Username', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  // CONDITION TO CHECK ADDED HERE
-  if(req.user.Username !== req.params.Username){
-    return res.status(400).send('Permission denied');
-}
-// CONDITION ENDS
+app.put('/users/:Username', [
+  //input validation here
+  check('Username', 'Username is required').isLength({min: 5}),
+  check('Username', 'Username contains non alphanumeric characters not allowed.').isAlphanumeric(),
+  check('Password', 'Password is required').not().isEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
+], passport.authenticate('jwt', {session: false}), async (req, res) => {
+  
+    //check validation object for errors
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({errors: errors.array()});
+    }
   await Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
     {
       Username: req.body.Username,
