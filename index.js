@@ -4,34 +4,13 @@ const bodyParser = require('body-parser');
 const morgan = require("morgan");
 const mongoose = require('mongoose');
 const Models = require('./models.js');
-const { check, validationResult } = require('express-validator');
-const cors = require('cors');
 
 const Movies = Models.Movie;
 const Users = Models.User;
-
 // Initialize your express application
 const app = express();
 
-// Configure CORS options
-const allowedOrigins = [
-  'http://localhost:1234', // Parcel dev server URL
-  // Add your production URL and any other allowed origins
-  'https://your-production-domain.com'
-];
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-};
-
-// Use the CORS middleware with the configured options
-app.use(cors(corsOptions));
+const { check, validationResult } = require('express-validator');
 
 console.log('starting mongo connection');
 mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
