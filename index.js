@@ -1,16 +1,36 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const morgan = require("morgan");
 const mongoose = require('mongoose');
 const Models = require('./models.js');
+const { check, validationResult } = require("express-validator");
+const cors = require("cors");
 
 const Movies = Models.Movie;
 const Users = Models.User;
+
 // Initialize your express application
 const app = express();
 
-const { check, validationResult } = require('express-validator');
+let allowedOrigins = [
+  "http://localhost:8080",
+  "http://localhost:1234",
+  "https://movies-flixmcn-ed96d6a64be1.herokuapp.com",
+  "http://localhost:4200",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+// Use the CORS middleware with the configured options
+app.use(cors(corsOptions));
 
 console.log('starting mongo connection');
 mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -21,32 +41,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('common')); // Uncomment for HTTP request logging
 app.use(express.static('public'));
-
-const cors = require("cors");
-const { check, validationResult } = require("express-validator");
-
-let allowedOrigins = [
-  "http://localhost:8080",
-  "http://localhost:1234",
-  "https://movies-flixmcn-ed96d6a64be1.herokuapp.com",
-  "http://localhost:4200",
-];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        // If a specific origin isn’t found on the list of allowed origins
-        let message =
-          "The CORS policy for this application doesn`t allow access from origin " +
-          origin;
-        return callback(new Error(message), false);
-      }
-      return callback(null, true);
-    },
-  })
-);
 
 let auth = require('./auth')(app);
 const passport = require('passport');
