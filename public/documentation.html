@@ -38,6 +38,26 @@
       </thead>
       <tbody>
         <tr>
+            <td>POST</td>
+            <td>/login</td>
+            <td>Authenticate and login a user</td>
+            <td>None</td>
+            <td>{
+                "Username": "username",
+                "Password": "password"
+            }</td>
+            <td>{
+                "user": {
+                    "_id": "123abc",
+                    "Username": "username",
+                    "Email": "example@example.com",
+                    "BirthDate": "YYYY-MM-DD",
+                    "FavoriteMovies": ["MovieId1", "MovieId2"]
+                },
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }</td>
+        </tr>        
+        <tr>
             <td>GET</td>
             <td>/users</td>
             <td>Get all users</td>
