@@ -62,25 +62,42 @@ app.get("/", (req, res) => {
 /* POST endpoint to add a new user */
 
 /* POST login. */
-module.exports = (router) => {
-  router.post('/login', (req, res) => {
-    passport.authenticate('local', { session: false }, (error, user, info) => {
-      if (error || !user) {
-        return res.status(400).json({
-          message: 'Something is not right',
-          user: user
-        });
+app.post('/login',
+  [
+    check('Username', 'Username is required').isLength({ min: 5 }),
+    check('Username', 'Username contains non-alphanumeric characters not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+  ], 
+  async (req, res) => {
+    // Check the validation object for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    const { Username, Password } = req.body;
+
+    try {
+      // Find the user by username
+      const user = await Users.findOne({ Username });
+      if (!user) {
+        return res.status(400).send('Username or password is incorrect');
       }
-      req.login(user, { session: false }, (error) => {
-        if (error) {
-          res.send(error);
-        }
-        let token = generateJWTToken(user.toJSON());
-        return res.json({ user, token });
-      });
-    })(req, res);
-  });
-}
+
+      // Compare the hashed password
+      const isMatch = await bcrypt.compare(Password, user.Password);
+      if (!isMatch) {
+        return res.status(400).send('Username or password is incorrect');
+      }
+
+      // User is authenticated successfully
+      res.status(200).json({ message: 'Login successful', user });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  }
+);
 
 app.post('/users', 
   // Validation logic here for request
