@@ -1,22 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const morgan = require("morgan");
 const mongoose = require('mongoose');
 const Models = require('./models.js');
+const { check, validationResult } = require("express-validator");
 
 const Movies = Models.Movie;
 const Users = Models.User;
-// Initialize your express application
-const app = express();
 
 
-const { check, validationResult } = require('express-validator');
 
 console.log('starting mongo connection');
 mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 //mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 console.log('connected to mongo');
+
+const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,9 +23,19 @@ app.use(morgan('common')); // Uncomment for HTTP request logging
 app.use(express.static('public'));
 
 const cors = require('cors');
-app.use(cors());
+const allowedOrigins = ['http://localhost:8080', 'http://localhost:1234', 'https://movies-flixmcn-ed96d6a64be1.herokuapp.com'];
 
-let auth = require('./auth')(app);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('The CORS policy for this application does not allow access from the specified origin.'));
+    }
+  }
+}));
+
+const auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
 
@@ -44,6 +53,49 @@ app.get("/", (req, res) => {
   Email: String,
   BirthDate: Date
 }*/
+
+
+/* POST login. */
+/* POST endpoint to add a new user */
+app.post('/users', 
+  // Validation logic here for request
+  [
+    check('Username', 'Username is required').isLength({ min: 5 }),
+    check('Username', 'Username contains non-alphanumeric characters not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ], async (req, res) => {
+    // Check the validation object for errors
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    // Hash the password
+    let hashedPassword = Users.hashPassword(req.body.Password);
+
+    try {
+      // Check if the username already exists
+      let existingUser = await Users.findOne({ Username: req.body.Username });
+      if (existingUser) {
+        return res.status(400).send(req.body.Username + ' already exists');
+      } else {
+        // Create a new user with the hashed password
+        let newUser = await Users.create({
+          Username: req.body.Username,
+          Password: hashedPassword,
+          Email: req.body.Email,
+          BirthDate: req.body.BirthDate
+        });
+        return res.status(201).json(newUser);
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Error: ' + error);
+    }
+  }
+);
 
 app.post('/users', 
   // Validation logic here for request
@@ -206,16 +258,18 @@ app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { se
 
 //MOVIES
 // Get all movies
+// Get all movies
 app.get('/movies', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    await Movies.find()
-    .then((movies) => {
-      res.status(201).json(movies);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
+  await Movies.find()
+  .then((movies) => {
+    res.status(201).json(movies);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+  });
 });
+
 // Get a movie by title
 app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.findOne({ Title: req.params.Title })
