@@ -22,6 +22,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('common')); // Uncomment for HTTP request logging
 app.use(express.static('public'));
 
+/*const cors = require('cors');
+app.use(cors());*/
+
 const cors = require('cors');
 const allowedOrigins = ['http://localhost:8080', 'http://localhost:1234', 'https://movies-flixmcn-ed96d6a64be1.herokuapp.com'];
 
@@ -57,45 +60,27 @@ app.get("/", (req, res) => {
 
 /* POST login. */
 /* POST endpoint to add a new user */
-app.post('/users', 
-  // Validation logic here for request
-  [
-    check('Username', 'Username is required').isLength({ min: 5 }),
-    check('Username', 'Username contains non-alphanumeric characters not allowed.').isAlphanumeric(),
-    check('Password', 'Password is required').not().isEmpty(),
-    check('Email', 'Email does not appear to be valid').isEmail()
-  ], async (req, res) => {
-    // Check the validation object for errors
-    let errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
-    // Hash the password
-    let hashedPassword = Users.hashPassword(req.body.Password);
-
-    try {
-      // Check if the username already exists
-      let existingUser = await Users.findOne({ Username: req.body.Username });
-      if (existingUser) {
-        return res.status(400).send(req.body.Username + ' already exists');
-      } else {
-        // Create a new user with the hashed password
-        let newUser = await Users.create({
-          Username: req.body.Username,
-          Password: hashedPassword,
-          Email: req.body.Email,
-          BirthDate: req.body.BirthDate
+/* POST login. */
+module.exports = (router) => {
+  router.post('/login', (req, res) => {
+    passport.authenticate('local', { session: false }, (error, user, info) => {
+      if (error || !user) {
+        return res.status(400).json({
+          message: 'Something is not right',
+          user: user
         });
-        return res.status(201).json(newUser);
       }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send('Error: ' + error);
-    }
-  }
-);
+      req.login(user, { session: false }, (error) => {
+        if (error) {
+          res.send(error);
+        }
+        let token = generateJWTToken(user.toJSON());
+        return res.json({ user, token });
+      });
+    })(req, res);
+  });
+}
 
 app.post('/users', 
   // Validation logic here for request
@@ -112,11 +97,12 @@ app.post('/users',
       return res.status(422).json({ errors: errors.array() });
     }
 
-  let hashedPassword = Users.hashPassword(req.body.Password);
-    await Users.findOne({ Username: req.body.Username })
+    let hashedPassword = Users.hashPassword(req.body.Password);
+    await Users.findOne({ Username: req.body.Username }) // Search to see if a user with the requested username already exists
       .then((user) => {
         if (user) {
-          return res.status(400).send(req.body.Username + 'already exists');
+        //If the user is found, send a response that it already exists
+          return res.status(400).send(req.body.Username + ' already exists');
         } else {
           Users
             .create({
@@ -125,11 +111,11 @@ app.post('/users',
               Email: req.body.Email,
               BirthDate: req.body.BirthDate
             })
-            .then((user) =>{res.status(201).json(user) })
-          .catch((error) => {
-            console.error(error);
-            res.status(500).send('Error: ' + error);
-          })
+            .then((user) => { res.status(201).json(user) })
+            .catch((error) => {
+              console.error(error);
+              res.status(500).send('Error: ' + error);
+            });
         }
       })
       .catch((error) => {
