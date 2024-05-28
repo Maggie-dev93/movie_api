@@ -211,9 +211,9 @@ app.put('/users/:Username', [
 });
 
 // Add a movie to a user's list of favorites
-app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), async (req, res) => {
+app.post('/users/:Username/movies/:MovieTitle', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Users.findOneAndUpdate({ Username: req.params.Username }, {
-     $push: { FavoriteMovies: req.params.MovieID }
+     $push: { FavoriteMovies: req.params.MovieTitle }
    },
    { new: true }) // This line makes sure that the updated document is returned
   .then((updatedUser) => {
@@ -242,11 +242,11 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
 });
 
 // Allow users to remove a movie from their list of favorites
-app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { Username, MovieID } = req.params;
+app.delete('/users/:Username/movies/:MovieTitle', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { Username, MovieTitle } = req.params;
   await Users.findOneAndUpdate(
       { Username: Username },
-      { $pull: { FavoriteMovies: MovieID } },
+      { $pull: { FavoriteMovies: MovieTitle } },
       { new: true }
   )
   .then(user => {
