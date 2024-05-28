@@ -178,16 +178,11 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), as
 }*/
 app.put('/users/:Username', [
   //input validation here
-  check('Username', 'Username is required').optional().isLength({min: 5}),
-  check('Username', 'Username contains non alphanumeric characters not allowed.').optional().isAlphanumeric(),
-  check('Password', 'Password is required').optional().not().isEmpty(),
-  check('Email', 'Email does not appear to be valid').optional().isEmail()
+  check('Username', 'Username is required').isLength({min: 5}),
+  check('Username', 'Username contains non alphanumeric characters not allowed.').isAlphanumeric(),
+  check('Password', 'Password is required').not().isEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
 ], passport.authenticate('jwt', {session: false}), async (req, res) => {
-  
-  const { Username, Password, Email, BirthDate } = req.body;
-  if (!Username && !Password && !Email && !BirthDate) {
-    return res.status(400).send('At least one field (Username, Password, Email, BirthDate) must be provided.');
-  }
 
     //check validation object for errors
     let errors = validationResult(req);
