@@ -399,7 +399,38 @@ app.post('/users', (req, res) => {
             res.status(400).send('no such user')
         }
         })
+// Add a route to get a user's favorite movies
+app.get('/users/:Username/favoriteMovies', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { Username } = req.params;
 
+  try {
+    // Find the user by username and populate the FavoriteMovies array with movie details
+    const user = await Users.findOne({ Username }).populate('FavoriteMovies');
+
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    // Extract and return only necessary movie details
+    const favoriteMovies = user.FavoriteMovies.map(movie => {
+      return {
+        _id: movie._id,
+        Title: movie.Title,
+        Description: movie.Description,
+        Genre: movie.Genre,
+        Director: movie.Director,
+        ReleaseYear: movie.ReleaseYear,
+        ImagePath: movie.ImagePath
+        // Add more fields as needed
+      };
+    });
+
+    res.json(favoriteMovies);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching favorite movies');
+  }
+});
 
 // READ all movies
 app.get('/movies', (req, res) => {
