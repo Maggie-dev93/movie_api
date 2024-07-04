@@ -177,38 +177,46 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), as
   BirthDate: Date
 }*/
 app.put('/users/:Username', [
-  //input validation here
-  check('Username', 'Username is required').isLength({min: 5}),
-  check('Username', 'Username contains non alphanumeric characters not allowed.').isAlphanumeric(),
-  check('Password', 'Password is required').not().isEmpty(),
-  check('Email', 'Email does not appear to be valid').isEmail()
-], passport.authenticate('jwt', {session: false}), async (req, res) => {
-
-    //check validation object for errors
+  // Input validation here
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    // Check validation object for errors
     let errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({errors: errors.array()});
+      return res.status(422).json({ errors: errors.array() });
     }
 
-    let hashedPassword = Users.hashPassword(req.body.Password);
-  await Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
-    {
-      Username: req.body.Username,
-      Password: hashedPassword,
-      Email: req.body.Email,
-      BirthDate: req.body.BirthDate
-    }
-  },
-  { new: true }) // This line makes sure that the updated document is returned
-  .then((updatedUser) => {
-    res.json(updatedUser);
-  })
-  .catch((err) => {
-    console.error(err);
-    res.status(500).send('Error: ' + err);
-  })
+    try {
+      // Retrieve fields from request body
+      const { Username, Password, Email, BirthDate } = req.body;
 
-});
+      // Build update object with only provided fields
+      let updateObject = {};
+      if (Username) updateObject.Username = Username;
+      if (Password) updateObject.Password = Users.hashPassword(Password);
+      if (Email) updateObject.Email = Email;
+      if (BirthDate) updateObject.BirthDate = BirthDate;
+
+      // Update user record based on Username
+      const updatedUser = await Users.findOneAndUpdate(
+        { Username: req.params.Username },
+        { $set: updateObject },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Return updated user object
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error: ' + error.message);
+    }
+  }
+]);
+
 
 // Add a movie to a user's list of favorites
 app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), async (req, res) => {
