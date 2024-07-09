@@ -9,8 +9,8 @@ const Movies = Models.Movie;
 const Users = Models.User;
 
 console.log('starting mongo connection');
-//mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+//mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 console.log('connected to mongo');
 
 const app = express();
@@ -31,7 +31,7 @@ app.use(cors({
       callback(new Error('The CORS policy for this application does not allow access from the specified origin.'));
     }
   }
-}));
+}));*/
 
 const auth = require('./auth')(app);
 const passport = require('passport');
@@ -319,6 +319,9 @@ app.get('/movies', passport.authenticate('jwt', { session: false }), async (req,
     res.status(500).send('Error: ' + err);
   });
 });
+// Add a route to get a user's favorite movies
+app.get('/users/:Username/favoriteMovies', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { Username } = req.params;
 
 /**
  * Get a user's favorite movies.
@@ -338,7 +341,6 @@ app.get('/users/:Username/favoriteMovies', passport.authenticate('jwt', { sessio
     if (!user) {
       return res.status(404).send('User not found');
     }
-
     const favoriteMovies = user.FavoriteMovies.map(movie => {
       return {
         _id: movie._id,
@@ -367,6 +369,7 @@ app.get('/users/:Username/favoriteMovies', passport.authenticate('jwt', { sessio
  * @param {object} req - Request object
  * @param {object} res - Response object
  */
+
 app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), async (req, res) => {
   await Movies.findOne({ Title: req.params.Title })
     .then((movies) => {
@@ -499,7 +502,38 @@ app.post('/users', (req, res) => {
             res.status(400).send('no such user')
         }
         })
+// Add a route to get a user's favorite movies
+app.get('/users/:Username/favoriteMovies', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { Username } = req.params;
 
+  try {
+    // Find the user by username and populate the FavoriteMovies array with movie details
+    const user = await Users.findOne({ Username }).populate('FavoriteMovies');
+
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    // Extract and return only necessary movie details
+    const favoriteMovies = user.FavoriteMovies.map(movie => {
+      return {
+        _id: movie._id,
+        Title: movie.Title,
+        Description: movie.Description,
+        Genre: movie.Genre,
+        Director: movie.Director,
+        ReleaseYear: movie.ReleaseYear,
+        ImagePath: movie.ImagePath
+        // Add more fields as needed
+      };
+    });
+
+    res.json(favoriteMovies);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching favorite movies');
+  }
+});
 
 // READ all movies
 app.get('/movies', (req, res) => {
