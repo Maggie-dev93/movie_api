@@ -31,7 +31,7 @@ app.use(cors({
       callback(new Error('The CORS policy for this application does not allow access from the specified origin.'));
     }
   }
-}));*/
+}))
 
 const auth = require('./auth')(app);
 const passport = require('passport');
@@ -662,4 +662,4 @@ const PORT = process.env.PORT || 8080; // Use the provided PORT environment vari
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-*/
+*/})
